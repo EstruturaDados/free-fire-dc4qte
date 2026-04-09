@@ -5,147 +5,189 @@
 #define MAX 10
 
 
-// Struct do Item
-struct Item {
+typedef struct {
     char nome[30];
     char tipo[20];
     int quantidade;
-};
+} Item;
 
-// Variáveis globais
-struct Item mochila[MAX];
+Item mochila[MAX];
 int totalItens = 0;
 
-// Função para inserir item
+void limparEnter(char texto[]) {
+    texto[strcspn(texto, "\n")] = '\0';
+}
+
+void mostrarMenu() {
+    printf("\n");
+    printf(" = = = = SISTEMA DE MOCHILA = = = =\n");
+
+    printf("1 - Inserir item\n");
+    printf("2 - Remover item\n");
+    printf("3 - Listar mochila\n");
+    printf("4 - Buscar item\n");
+    printf("5 - Ordenar mochila \n");
+    printf("0 - Sair\n");
+    printf("Escolha: ");
+}
+
 void inserirItem() {
     if (totalItens >= MAX) {
-        printf("\nMochila cheia!\n");
+        printf("=== Mochila cheia! ===\n");
+
         return;
     }
-
-    printf("\nNome: ");
+    printf("\nNome do item: ");
     fgets(mochila[totalItens].nome, 30, stdin);
-    mochila[totalItens].nome[strcspn(mochila[totalItens].nome, "\n")] = '\0';
+    limparEnter(mochila[totalItens].nome);
 
-    printf("Tipo: ");
+    printf("Tipo do item: ");
     fgets(mochila[totalItens].tipo, 20, stdin);
-    mochila[totalItens].tipo[strcspn(mochila[totalItens].tipo, "\n")] = '\0';
+    limparEnter(mochila[totalItens].tipo);
 
     printf("Quantidade: ");
     scanf("%d", &mochila[totalItens].quantidade);
     getchar();
 
     totalItens++;
+    printf(" === Item inserido com sucesso! ===\n");
 
-    printf("\nItem cadastrado com sucesso!\n");
 }
 
-// Função para listar itens
 void listarItens() {
     if (totalItens == 0) {
-        printf("\nMochila vazia!\n");
+        printf("==== MOCHILA VAZIA ====\n");
         return;
     }
 
-    printf("\n=== INVENTÁRIO ===\n");
+    printf("\n");
+
+    printf("│ ID  -  Nome                         Tipo               Quant.   \n");
     for (int i = 0; i < totalItens; i++) {
-        printf("\nItem %d\n", i + 1);
-        printf("Nome: %s\n", mochila[i].nome);
-        printf("Tipo: %s\n", mochila[i].tipo);
-        printf("Quantidade: %d\n", mochila[i].quantidade);
+        printf("│ %-2d │ %-28s │ %-18s │ %-8d │\n",
+               i + 1,
+               mochila[i].nome,
+               mochila[i].tipo,
+               mochila[i].quantidade);
     }
+    printf("Total de itens: %d\n", totalItens);
 }
 
-// Busca sequencial
-int buscarItem(char nome[]) {
+int buscarSequencial(char nome[], int *comparacoes) {
+    *comparacoes = 0;
+
     for (int i = 0; i < totalItens; i++) {
+        (*comparacoes)++;
+
         if (strcmp(mochila[i].nome, nome) == 0) {
             return i;
         }
     }
+
     return -1;
 }
 
-// Remover item
 void removerItem() {
     char nome[30];
+    int comparacoes;
 
     printf("\nDigite o nome do item a remover: ");
     fgets(nome, 30, stdin);
-    nome[strcspn(nome, "\n")] = '\0';
+    limparEnter(nome);
 
-    int pos = buscarItem(nome);
+    int pos = buscarSequencial(nome, &comparacoes);
 
     if (pos == -1) {
-        printf("\nItem não encontrado!\n");
+        printf("Item não encontrado!\n");
         return;
     }
 
-    // desloca os elementos
     for (int i = pos; i < totalItens - 1; i++) {
         mochila[i] = mochila[i + 1];
     }
 
     totalItens--;
 
-    printf("\nItem removido com sucesso!\n");
+    printf("=== Item removido com sucesso! ====\n");
+
 }
 
-// Buscar e mostrar item
-void exibirBusca() {
+void exibirBuscaSequencial() {
     char nome[30];
+    int comparacoes;
 
     printf("\nDigite o nome do item: ");
     fgets(nome, 30, stdin);
-    nome[strcspn(nome, "\n")] = '\0';
+    limparEnter(nome);
 
-    int pos = buscarItem(nome);
+    int pos = buscarSequencial(nome, &comparacoes);
 
     if (pos == -1) {
-        printf("\nItem não encontrado!\n");
+        printf(" === Item não encontrado!  ===\n");
     } else {
-        printf("\n=== ITEM ENCONTRADO ===\n");
-        printf("Nome: %s\n", mochila[pos].nome);
-        printf("Tipo: %s\n", mochila[pos].tipo);
-        printf("Quantidade: %d\n", mochila[pos].quantidade);
+        printf(" = = = ITEM ENCONTRADO = = =\n");;
+        printf("Nome: %-30s\n", mochila[pos].nome);
+        printf("Tipo: %-30s\n", mochila[pos].tipo);
+        printf("Quantidade: %-24d\n", mochila[pos].quantidade);
     }
+
+    printf("Comparações realizadas: %d\n", comparacoes);
 }
 
-// Menu principal
+void ordenarMochila() {
+    Item temp;
+
+    for (int i = 0; i < totalItens - 1; i++) {
+        for (int j = 0; j < totalItens - i - 1; j++) {
+            if (strcmp(mochila[j].nome, mochila[j + 1].nome) > 0) {
+                temp = mochila[j];
+                mochila[j] = mochila[j + 1];
+                mochila[j + 1] = temp;
+            }
+        }
+    }
+
+    printf("\n==== Mochila ordenada por nome! ====\n");
+
+}
+
 int main() {
     int opcao;
 
     do {
-        printf("\n==== SISTEMA DE INVENTÁRIO ====\n");
-        printf("1 - Cadastrar item\n");
-        printf("2 - Remover item\n");
-        printf("3 - Listar itens\n");
-        printf("4 - Buscar item\n");
-        printf("0 - Sair\n");
-        printf("Escolha: ");
+        mostrarMenu();
+
         scanf("%d", &opcao);
         getchar();
 
         switch (opcao) {
             case 1:
                 inserirItem();
-                listarItens();
                 break;
+
             case 2:
                 removerItem();
-                listarItens();
                 break;
+
             case 3:
                 listarItens();
                 break;
+
             case 4:
-                exibirBusca();
+                exibirBuscaSequencial();
                 break;
+
+            case 5:
+                ordenarMochila();
+                break;
+
+
             case 0:
-                printf("\nSaindo...\n");
+                printf("Encerrando o sistema...\n");
                 break;
+
             default:
-                printf("\nOpção inválida!\n");
+                printf("Opção inválida!\n");
         }
 
     } while (opcao != 0);
